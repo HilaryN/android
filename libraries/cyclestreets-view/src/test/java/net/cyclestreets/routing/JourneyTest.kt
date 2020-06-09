@@ -27,9 +27,6 @@ class JourneyTest {
 
     @Test
     fun remainingDistance() {
-        // Get distance to end of active segment
-
-        //activeSeg!!.distanceFromEnd(52.2055f, 0.1183f)
         assert(journey.remainingDistance(27) == 6202)
     }
 
