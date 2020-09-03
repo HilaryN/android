@@ -144,7 +144,9 @@ public class CycleMapView extends FrameLayout
       Log.d(TAG, "Working around weird location setting bug");
       return;
     }
-
+// todo Note that paused_ probably isn't ever true currently as CMV gets re-initialised in onResume.
+    // But if we change so that CMV etc isn't reinitialised then need to check what this is for?  (Is it for note above
+    // re North Pole coords?
     paused_ = true;
 
     final SharedPreferences.Editor edit = prefs_.edit();
@@ -180,12 +182,16 @@ public class CycleMapView extends FrameLayout
 
     // These lines effectively shut down the map.
     // This object needs to be discarded and re-created on resuming.
-    getTileProvider().detach();
-    getTileProvider().clearTileCache();
-    BitmapPool.getInstance().clearBitmapPool();
+    //getTileProvider().detach();     // todo moved to onDestroy
+    //getTileProvider().clearTileCache(); // todo may leave these two lines in
+    //BitmapPool.getInstance().clearBitmapPool();
   }
 
   public void onResume() {
+    if (paused_ == true) {
+      paused_ = false;
+      return;
+    }
     final ITileSource tileSource = mapRenderer();
     if (!tileSource.equals(renderer_)) {
       renderer_ = tileSource;
@@ -198,7 +204,7 @@ public class CycleMapView extends FrameLayout
     location_.enableLocation(locationEnabled);
     if (locationFollow && hasPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION))
       location_.enableAndFollowLocation(true);
-
+// todo Should be able to take this out if onPause / Resume works properly:
     if (prefs_.contains(PREFS_FIND_PLACE_LAT) && prefs_.contains(PREFS_FIND_PLACE_LON)) {
       int fpLat = pref(PREFS_FIND_PLACE_LAT, 999);  // Default value shouldn't ever be needed
       int fpLon = pref(PREFS_FIND_PLACE_LON, 999);  // Default value shouldn't ever be needed
@@ -225,6 +231,13 @@ public class CycleMapView extends FrameLayout
       public void onTick(long unfinished) { }
       public void onFinish() { postInvalidate(); }
     }.start();
+  }
+
+  public void onDestroy() {
+    // These lines effectively shut down the map.
+    getTileProvider().detach();
+    // getTileProvider().clearTileCache();  todo - not needed as it is now in detach
+    BitmapPool.getInstance().clearBitmapPool();
   }
 
   ////////////////////////////////////////////////////////////

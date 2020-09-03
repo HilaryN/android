@@ -27,6 +27,7 @@ import net.cyclestreets.util.Logging
 
 private val TAG = Logging.getTag(MainNavDrawerActivity::class.java)
 private const val DRAWER_ITEMID_SELECTED_KEY = "DRAWER_ITEM_SELECTED"
+private var paused = false
 
 
 abstract class MainNavDrawerActivity : AppCompatActivity(), OnNavigationItemSelectedListener, Route.Listener {
@@ -184,16 +185,24 @@ abstract class MainNavDrawerActivity : AppCompatActivity(), OnNavigationItemSele
     }
 
     public override fun onResume() {
-        val selectedItem = prefs().getInt(DRAWER_ITEMID_SELECTED_KEY, R.id.nav_journey_planner)
-        if (!showPage(selectedItem))
-            showPage(R.id.nav_journey_planner)
+        if (paused == true) {
+            paused = false
+        }
+        else {
+            // If menu item not found, show journey planner
+            val selectedItem = prefs().getInt(DRAWER_ITEMID_SELECTED_KEY, R.id.nav_journey_planner)
+            if (!showPage(selectedItem))
+                showPage(R.id.nav_journey_planner)
+        }
         super.onResume()
         Route.registerListener(this)
         setBlogStateTitle()
     }
 
     public override fun onPause() {
+        paused = true
         Route.unregisterListener(this)
+        // todo This may not be necessary:
         currentMenuItemId()?.let {
             saveCurrentMenuSelection(it)
         }

@@ -47,7 +47,7 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener {
 
         return v
     }
-
+// todo check whether onPause / onResume necessary here? (esp waypoints)
     override fun onPause() {
         Route.onPause(routeSetter.waypoints())
         Route.unregisterListener(this)
