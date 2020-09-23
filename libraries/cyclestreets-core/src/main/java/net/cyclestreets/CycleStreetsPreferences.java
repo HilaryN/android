@@ -156,6 +156,12 @@ public class CycleStreetsPreferences
     putBoolean(PREF_PERMISSION_REQUESTED_PREFIX + permission, true);
   }
 
+  public static void clearPermissionRequested(String permission) {
+    final Editor editor = editor();
+    editor.remove(PREF_PERMISSION_REQUESTED_PREFIX + permission);
+    editor.apply();
+  }
+
   public static boolean uploadSmallImages() {
     if ("640px".equals(uploadSize()))
       return true;

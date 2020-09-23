@@ -13,8 +13,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat.startActivity
 import androidx.fragment.app.Fragment
-import net.cyclestreets.CycleStreetsPreferences.logPermissionAsRequested
-import net.cyclestreets.CycleStreetsPreferences.permissionPreviouslyRequested
+import net.cyclestreets.CycleStreetsPreferences.*
 import net.cyclestreets.util.Permissions.justifications
 import net.cyclestreets.view.R
 
@@ -64,6 +63,7 @@ fun doOrRequestPermission(fragment: Fragment, permission: String, action: () -> 
                 requestPermission(fragment, permission)
             }
         } else {
+            clearPermissionRequested(permission)
             // User has previously denied, and said "don't ask me again".  Tell them they'll have to go into app settings now.
             MessageBox.OkHtml(context, justificationAfterDenial(context, permission)) { _, _ ->
                 goToSettings(context)
@@ -91,9 +91,18 @@ private fun activityFromContext(initialContext: Context): Activity? {
 private fun requestPermission(activity: Activity, permission: String) {
     activity.requestPermissions(arrayOf(permission), 1)
 }
-private fun requestPermission(fragment: Fragment, permission: String) {
+// todo temp make public private fun requestPermission(fragment: Fragment, permission: String) {
+fun requestPermission(fragment: Fragment, permission: String) {
     try {
         fragment.requestPermissions(arrayOf(permission), 1)
+    } catch (e: IllegalStateException) {
+        Log.w(TAG, "Unable to request permission $permission from fragment $fragment", e)
+    }
+}
+// todo temp test:
+fun requestPermission(fragment: Fragment, permission: String, request_code: Int) {
+    try {
+        fragment.requestPermissions(arrayOf(permission), request_code)
     } catch (e: IllegalStateException) {
         Log.w(TAG, "Unable to request permission $permission from fragment $fragment", e)
     }
@@ -101,7 +110,8 @@ private fun requestPermission(fragment: Fragment, permission: String) {
 
 // Go to settings - if dynamic permission requesting is no long an option
 @RequiresApi(api = Build.VERSION_CODES.M)
-private fun goToSettings(context: Context) {
+// todo temp make public private fun goToSettings(context: Context) {
+fun goToSettings(context: Context) {
     val androidAppSettingsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:net.cyclestreets"))
             .addCategory(Intent.CATEGORY_DEFAULT)
             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -109,11 +119,13 @@ private fun goToSettings(context: Context) {
 }
 
 // justifications
-private fun justification(context: Context, permission: String): String {
+// todo temp make public private fun justification(context: Context, permission: String): String {
+fun justification(context: Context, permission: String): String {
     val reason = context.getString(justifications[permission]!!)
     return context.getString(R.string.perm_justification_format, reason)
 }
-private fun justificationAfterDenial(context: Context, permission: String): String {
+// todo temp make public private fun justificationAfterDenial(context: Context, permission: String): String {
+fun justificationAfterDenial(context: Context, permission: String): String {
     val reason = context.getString(justifications[permission]!!)
     return context.getString(R.string.perm_justification_after_denial_format, reason)
 }

@@ -9,6 +9,7 @@ import net.cyclestreets.routing.Waypoints
 
 import android.Manifest
 import android.content.DialogInterface
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,6 +18,9 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.NonNull
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 
 import net.cyclestreets.util.MenuHelper.enableMenuItem
 import net.cyclestreets.util.MenuHelper.showMenuItem
@@ -24,7 +28,7 @@ import net.cyclestreets.views.overlay.*
 
 private val TAG = Logging.getTag(RouteMapFragment::class.java)
 
-class RouteMapFragment : CycleMapFragment(), Route.Listener {
+class RouteMapFragment : CycleMapFragment(), Route.Listener, ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var routeSetter: TapToRouteOverlay
     private var hasGps: Boolean = false
 
@@ -100,7 +104,7 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener {
     }
 
     private fun startLiveRide() {
-        doOrRequestPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) {
+        doOrRequestPermission2(this, Manifest.permission.ACCESS_FINE_LOCATION) {
             LiveRideActivity.launch(requireContext())
         }
     }
@@ -146,4 +150,41 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener {
     override fun onResetJourney() {
         mapView().invalidate()
     }
+
+    fun doOrRequestPermission2(fragment: Fragment, permission: String, action: () -> Unit) {
+        val context = fragment.requireContext()
+        if (hasPermission(context, permission))
+        // all good, carry on
+            action()
+        else {
+            if (!CycleStreetsPreferences.permissionPreviouslyRequested(permission) || fragment.shouldShowRequestPermissionRationale(permission)) {
+                // Give details of why we're asking for permission, be it when we ask for the first time
+                // or after a user clicked "deny" the first time
+                CycleStreetsPreferences.logPermissionAsRequested(permission)
+                MessageBox.OkHtml(context, justification(context, permission)) { _, _ ->
+                    requestPermission(fragment, permission, 2)
+                }
+            } else {
+                CycleStreetsPreferences.clearPermissionRequested(permission)
+                // User has previously denied, and said "don't ask me again".  Tell them they'll have to go into app settings now.
+                MessageBox.OkHtml(context, justificationAfterDenial(context, permission)) { _, _ ->
+                    goToSettings(context)
+                }
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == 2) {
+            // Request for camera permission.
+            if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission has been granted. Start camera preview Activity.
+                startLiveRide()
+            } else {
+                // Permission request was denied.
+
+            }
+        }
+    }
+
 }
