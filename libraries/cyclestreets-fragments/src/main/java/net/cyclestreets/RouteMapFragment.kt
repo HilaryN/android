@@ -157,32 +157,34 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener, ActivityCompat.OnRe
         // all good, carry on
             action()
         else {
-            if (!CycleStreetsPreferences.permissionPreviouslyRequested(permission) || fragment.shouldShowRequestPermissionRationale(permission)) {
+            val prev = CycleStreetsPreferences.permissionPreviouslyRequested(permission)
+            val rati = fragment.shouldShowRequestPermissionRationale(permission)
+            if (!prev || rati) {
                 // Give details of why we're asking for permission, be it when we ask for the first time
                 // or after a user clicked "deny" the first time
-                CycleStreetsPreferences.logPermissionAsRequested(permission)
                 MessageBox.OkHtml(context, justification(context, permission)) { _, _ ->
                     requestPermission(fragment, permission, 2)
                 }
             } else {
-                CycleStreetsPreferences.clearPermissionRequested(permission)
                 // User has previously denied, and said "don't ask me again".  Tell them they'll have to go into app settings now.
+                CycleStreetsPreferences.clearPermissionRequested(permission)
                 MessageBox.OkHtml(context, justificationAfterDenial(context, permission)) { _, _ ->
                     goToSettings(context)
                 }
             }
         }
     }
-
+    // Callback after user has selected a permission (todo in this case the one requested from DoOrRequest2)
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         if (requestCode == 2) {
-            // Request for camera permission.
+            // Request for location permission.
             if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission has been granted. Start camera preview Activity.
+                // Permission has been granted.
+                CycleStreetsPreferences.clearPermissionRequested(permissions[0])    // todo rename as clearPermsDenied
                 startLiveRide()
             } else {
                 // Permission request was denied.
-
+                CycleStreetsPreferences.logPermissionAsRequested(permissions[0])    // todo rename as log...Denied
             }
         }
     }
