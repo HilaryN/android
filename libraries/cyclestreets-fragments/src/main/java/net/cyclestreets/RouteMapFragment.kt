@@ -153,9 +153,11 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener, ActivityCompat.OnRe
 
     fun doOrRequestPermission2(fragment: Fragment, permission: String, action: () -> Unit) {
         val context = fragment.requireContext()
-        if (hasPermission(context, permission))
-        // all good, carry on
+        if (hasPermission(context, permission)) {
+            CycleStreetsPreferences.clearSettingsLastTime(permission)
+            // all good, carry on
             action()
+        }
         else {
             val prev = CycleStreetsPreferences.permissionPreviouslyRequested(permission)
             val rati = fragment.shouldShowRequestPermissionRationale(permission)
@@ -166,10 +168,27 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener, ActivityCompat.OnRe
                     requestPermission(fragment, permission, 2)
                 }
             } else {
-                // User has previously denied, and said "don't ask me again".  Tell them they'll have to go into app settings now.
-                CycleStreetsPreferences.clearPermissionRequested(permission)
-                MessageBox.OkHtml(context, justificationAfterDenial(context, permission)) { _, _ ->
-                    goToSettings(context)
+                if (CycleStreetsPreferences.settingsLastTime(permission)) {
+                    // If the user was taken to device settings last time, then Android 11 / API 30 gives them 3 options:
+                    // Allow for this app / Ask every time / Deny
+                    // To get to this point they would have taken "Ask every time" or "Deny" but unfortunately we don't know which
+                    // as both appear as Permission not granted.
+                    // However the Android framework will know which option was taken in the settings
+                    // and if we request permission here it will take the appropriate action.
+                    // If the "Deny" option was taken in the device settings then the permission box won't be displayed.
+                    // (In that case it would be nice to display a toast message saying "X permission not granted.  Please go to device settings to allow this."
+                    // but that can be a future enhancement :-) )
+                    // If the "Ask every time" option was taken then the permission box will be displayed.
+                    // No justification box is shown here as they have already had them both and it wouldn't be appropriate if the permissions
+                    // box then wasn't displayed.
+                    requestPermission(fragment, permission, 2)
+                }
+                else {
+                    // User has previously denied, and said "don't ask me again".  Tell them they'll have to go into app settings now.
+                    CycleStreetsPreferences.logSettingsLastTime(permission)
+                    MessageBox.OkHtml(context, justificationAfterDenial(context, permission)) { _, _ ->
+                        goToSettings(context)
+                    }
                 }
             }
         }
@@ -180,6 +199,7 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener, ActivityCompat.OnRe
             // Request for location permission.
             if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission has been granted.
+                CycleStreetsPreferences.clearSettingsLastTime(permissions[0])
                 CycleStreetsPreferences.clearPermissionRequested(permissions[0])    // todo rename as clearPermsDenied
                 startLiveRide()
             } else {
