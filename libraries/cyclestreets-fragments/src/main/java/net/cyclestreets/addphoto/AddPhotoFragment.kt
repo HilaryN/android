@@ -319,13 +319,11 @@ class AddPhotoFragment : Fragment(), View.OnClickListener, Undoable, ThereOverla
 
             photo?.recycle()
             photo = Bitmaps.loadFile(photoFilename)
+// todo check API level 29 here?
+            doOrRequestPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) {
+                locatePhoto(true)
+            }
 
-            val exif = ExifInterface(photoFilename!!)
-            dateTime = photoTimestamp(exif)
-            val photoLoc = photoLocation(exif)
-            geolocated = photoLoc != null
-            there.noOverThere(photoLoc)
-            nextStep()
         } catch (e: Exception) {
             Toast.makeText(activity, "There was a problem grabbing the photo : " + e.message, Toast.LENGTH_LONG).show()
             Log.w(TAG, "onActivityResult threw exception when processing requestCode $requestCode", e)
@@ -335,6 +333,35 @@ class AddPhotoFragment : Fragment(), View.OnClickListener, Undoable, ThereOverla
                     CHOOSE_PHOTO
                 )
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        var i = 0
+        for (permission in permissions) {
+            if (permission == Manifest.permission.ACCESS_MEDIA_LOCATION) {
+                locatePhoto(grantResults[i] == PackageManager.PERMISSION_GRANTED)
+            } else if (permission == Manifest.permission.READ_EXTERNAL_STORAGE) {
+                startActivityForResult(Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI),
+                        CHOOSE_PHOTO)
+            }
+            // todo add action for WRITE_EXTERNAL_STORAGE as well
+            i++
+        }
+    }
+    
+    private fun locatePhoto(exifPermissionGranted: Boolean) {
+        dateTime = null
+        var photoLoc: GeoPoint? = null
+
+        if (exifPermissionGranted) {
+            val exif = ExifInterface(photoFilename!!)
+            dateTime = photoTimestamp(exif)
+            photoLoc = photoLocation(exif)
+        }
+
+        geolocated = photoLoc != null
+        there.noOverThere(photoLoc)
+        nextStep()
     }
 
     ///////////// Fragment methods - State store / retrieval
