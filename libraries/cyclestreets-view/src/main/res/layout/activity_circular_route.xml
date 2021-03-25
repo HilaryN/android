@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:paddingBottom="48dp"
+    android:paddingBottom="16dp"
     tools:context="net.cyclestreets.views.CircularRouteActivity">
 
     <TextView
@@ -16,14 +16,14 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:text="@string/create_circular_route_desc"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tablayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/textView2"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
 
         android:paddingStart="8dp"
         android:paddingTop="8dp"
@@ -105,5 +105,51 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textColor="@color/cs_white" />
 
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/currentValueTextView"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:text="@string/choose_pois_to_route_via"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/textView3"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/POITextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="48dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/num_pois_selected"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+        <Button
+            android:id="@+id/poiButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="48dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/apptheme_color"
+            android:text="@string/pois"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textColor="@color/cs_white" />
+
+    </LinearLayout>
 
 </RelativeLayout>
