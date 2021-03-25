@@ -18,6 +18,7 @@ class CircularRouteActivity : AppCompatActivity() {
     private lateinit var minValueMins:TextView
     private lateinit var maxValueMins:TextView
     private lateinit var curValueTextView:TextView
+    private lateinit var POITextView:TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +32,9 @@ class CircularRouteActivity : AppCompatActivity() {
         minValueMins = findViewById(R.id.seekBarMin)
         maxValueMins = findViewById(R.id.seekBarMax)
         curValueTextView = findViewById(R.id.currentValueTextView)
+        POITextView = findViewById(R.id.POITextView)
 
+        POITextView.text = String.format(this.getString(R.string.num_pois_selected), 3)  //todo calc number of POIs selected
         val aTabLayout = findViewById<TabLayout>(R.id.tablayout)
         // If screen has been rotated, get previously-selected tab and make sure it is selected
         val tab = aTabLayout.getTabAt(viewModel.position)
