@@ -2,6 +2,7 @@ package net.cyclestreets.views
 
 import androidx.lifecycle.ViewModel
 import net.cyclestreets.CycleStreetsPreferences
+import net.cyclestreets.api.POICategory
 import java.util.*
 
 class CircularRouteViewModel: ViewModel() {
@@ -25,6 +26,8 @@ class CircularRouteViewModel: ViewModel() {
     lateinit var currentValueUnit: Array<String>
 
     var position = 0
+
+    var activeCategories: List<POICategory> = ArrayList()
 
     init {
 

@@ -9,6 +9,9 @@ import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import net.cyclestreets.view.R
 import com.google.android.material.tabs.TabLayout
+import net.cyclestreets.api.POICategories
+import net.cyclestreets.util.Dialog
+import net.cyclestreets.views.overlay.POIOverlay
 
 class CircularRouteActivity : AppCompatActivity() {
 
@@ -34,7 +37,8 @@ class CircularRouteActivity : AppCompatActivity() {
         curValueTextView = findViewById(R.id.currentValueTextView)
         POITextView = findViewById(R.id.POITextView)
 
-        POITextView.text = String.format(this.getString(R.string.num_pois_selected), 3)  //todo calc number of POIs selected
+        POITextView.text = String.format(this.getString(R.string.num_pois_selected), viewModel.activeCategories.count())
+
         val aTabLayout = findViewById<TabLayout>(R.id.tablayout)
         // If screen has been rotated, get previously-selected tab and make sure it is selected
         val tab = aTabLayout.getTabAt(viewModel.position)
@@ -91,6 +95,19 @@ class CircularRouteActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    fun poiButtonOnClick(view: View) {
+
+        val poiAdapter = POIOverlay.POICategoryAdapter(this, POICategories.get(), viewModel.activeCategories)
+
+        Dialog.listViewDialog(this, R.string.poi_menu_title, poiAdapter,
+                { _, _ ->
+                    viewModel.activeCategories = poiAdapter.chosenCategories()
+                    POITextView.text = String.format(this.getString(R.string.num_pois_selected), viewModel.activeCategories.count())
+                },
+                { _, _ ->
+                })
     }
 
     fun createButtonOnClick(view: View) {
