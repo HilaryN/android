@@ -13,6 +13,9 @@ import com.google.android.material.tabs.TabLayout
 import net.cyclestreets.EXTRA_CIRCULAR_ROUTE_DISTANCE
 import net.cyclestreets.EXTRA_CIRCULAR_ROUTE_DURATION
 import net.cyclestreets.views.CircularRouteViewModel.Companion.DURATION
+import net.cyclestreets.api.POICategories
+import net.cyclestreets.util.Dialog
+import net.cyclestreets.views.overlay.POIOverlay
 
 class CircularRouteActivity : AppCompatActivity() {
 
@@ -38,7 +41,7 @@ class CircularRouteActivity : AppCompatActivity() {
         currentValue = findViewById(R.id.circularRouteCurrentValue)
         POITextView = findViewById(R.id.POITextView)
 
-        POITextView.text = String.format(this.getString(R.string.num_pois_selected), 3)  //todo calc number of POIs selected
+        POITextView.text = String.format(this.getString(R.string.num_pois_selected), viewModel.activeCategories.count())
         val durationOrDistanceTab = findViewById<TabLayout>(R.id.circularRouteDurationOrDistanceTab)
         // If screen has been rotated, get previously-selected tab and make sure it is selected
         durationOrDistanceTab.getTabAt(viewModel.currentTab)?.let { tab ->
@@ -90,6 +93,19 @@ class CircularRouteActivity : AppCompatActivity() {
             viewModel.values[currentTab] = viewModel.minValues[currentTab] + seekbar?.progress!!
             currentValue.text = "${viewModel.values[currentTab]} ${viewModel.units[currentTab]}"
         }
+    }
+
+    fun poiButtonOnClick(view: View) {
+
+        val poiAdapter = POIOverlay.POICategoryAdapter(this, POICategories.get(), viewModel.activeCategories)
+
+        Dialog.listViewDialog(this, R.string.poi_menu_title, poiAdapter,
+                { _, _ ->
+                    viewModel.activeCategories = poiAdapter.chosenCategories()
+                    POITextView.text = String.format(this.getString(R.string.num_pois_selected), viewModel.activeCategories.count())
+                },
+                { _, _ ->
+                })
     }
 
     fun circularRouteGoButtonClick(view: View) {

@@ -146,6 +146,7 @@
             android:layout_marginRight="48dp"
             android:layout_weight="1"
             android:backgroundTint="@color/apptheme_color"
+            android:onClick="poiButtonOnClick"
             android:text="@string/pois"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textColor="@color/cs_white" />
