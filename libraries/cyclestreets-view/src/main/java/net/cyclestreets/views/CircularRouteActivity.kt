@@ -12,6 +12,7 @@ import net.cyclestreets.view.R
 import com.google.android.material.tabs.TabLayout
 import net.cyclestreets.EXTRA_CIRCULAR_ROUTE_DISTANCE
 import net.cyclestreets.EXTRA_CIRCULAR_ROUTE_DURATION
+import net.cyclestreets.EXTRA_CIRCULAR_ROUTE_POI_CATEGORIES
 import net.cyclestreets.views.CircularRouteViewModel.Companion.DURATION
 import net.cyclestreets.api.POICategories
 import net.cyclestreets.util.Dialog
@@ -110,10 +111,15 @@ class CircularRouteActivity : AppCompatActivity() {
 
     fun circularRouteGoButtonClick(view: View) {
         val returnIntent = Intent().apply {
+
             if (viewModel.currentTab == DURATION)
                 putExtra(EXTRA_CIRCULAR_ROUTE_DURATION, viewModel.durationInSeconds())
             else
                 putExtra(EXTRA_CIRCULAR_ROUTE_DISTANCE, viewModel.distanceInMetres())
+
+            if (viewModel.activeCategories.isNotEmpty())
+                putExtra(EXTRA_CIRCULAR_ROUTE_POI_CATEGORIES,
+                         viewModel.activeCategories.joinToString(separator = ",") {it.key})
         }
         setResult(RESULT_OK, returnIntent)
         finish()

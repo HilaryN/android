@@ -108,7 +108,7 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener {
                 Route.plotCircularRoute(RoutePlans.PLAN_LEISURE,
                                         data.getIntExtra(EXTRA_CIRCULAR_ROUTE_DISTANCE, 0),
                                         data.getIntExtra(EXTRA_CIRCULAR_ROUTE_DURATION, 0),
-                                   null,
+                                        data.getStringExtra(EXTRA_CIRCULAR_ROUTE_POI_CATEGORIES),
                                         requireContext())
             }
         }

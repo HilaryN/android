@@ -99,7 +99,7 @@
         android:textColor="@color/cs_white" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/poiHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/circularRouteCurrentValue"
@@ -114,7 +114,7 @@
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/textView3"
+        android:layout_below="@id/poiHeader"
         android:orientation="horizontal">
 
         <TextView

@@ -168,6 +168,8 @@ class Journey private constructor(wp: Waypoints? = null) {
                 }
             }
             // For leisure / circular routes there is no waypoint in the json.
+            // todo: in fact there is a single waypoint in the json.  Need to change transform spec in JourneyStringTransformer?
+            //  as if there is only one it isn't being transformed.
             // Put the start point into waypoints so it can be displayed on the screen.
             if (journey.waypoints.count() == 0) {
                 journey.waypoints.add(jdo.route.start_latitude, jdo.route.start_longitude)

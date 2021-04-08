@@ -44,13 +44,14 @@ private const val V1API_XML_JOLT_SPEC = """[{
   }
 }]
 """
-
+//todo - need to make sure waypoint works for single waypoint
 private const val V1API_JSON_JOLT_SPEC = """[{
   "operation": "shift",
   "spec": {
     "waypoint": {
       "*": { "\\@attributes": "waypoints" }
     },
+    
     "marker": {
       "*": {
         "\\@attributes": {
@@ -61,6 +62,7 @@ private const val V1API_JSON_JOLT_SPEC = """[{
         }
       }
     },
+    "poi": "poi",
     "error": "Error"
   }
 }]"""
