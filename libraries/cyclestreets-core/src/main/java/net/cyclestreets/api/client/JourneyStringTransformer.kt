@@ -44,7 +44,6 @@ private const val V1API_XML_JOLT_SPEC = """[{
   }
 }]
 """
-//todo - need to make sure waypoint works for single waypoint 
 // For A-B route, input json will have array of waypoints.
 // For circular route, input json has a single waypoint. Convert this to an array.
 private const val V1API_JSON_JOLT_SPEC = """[{
@@ -64,7 +63,9 @@ private const val V1API_JSON_JOLT_SPEC = """[{
         }
       }
     },
-    "poi": "poi",
+    "poi": {
+      "*": { "\\@attributes": "pois" }
+    },
     "error": "Error"
   }
 }]"""
