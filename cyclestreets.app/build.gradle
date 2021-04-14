@@ -78,6 +78,7 @@ play {
 
 dependencies {
   api project(':libraries:cyclestreets-fragments')
+  implementation 'androidx.startup:startup-runtime:1.0.0'
 
   androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
   androidTestImplementation 'com.android.support.test:runner:1.0.2'
