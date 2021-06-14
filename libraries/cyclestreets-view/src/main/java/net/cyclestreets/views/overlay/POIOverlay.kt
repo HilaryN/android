@@ -39,7 +39,7 @@ import org.osmdroid.views.overlay.OverlayItem
 private val TAG = Logging.getTag(POIOverlay::class.java)
 
 
-class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(mapView, false),
+open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(mapView, false),
                                           MapListener, MenuListener, PauseResumeListener, Undoable {
 
     private val context: Context = mapView.context
@@ -122,7 +122,8 @@ class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(mapVi
     override fun onSingleTap(event: MotionEvent): Boolean {
         if (activeItem != null && tappedInBubble(event))
             return true
-
+// todo temp comment: the following checks whether tap was on a displayed POI.
+        // todo Would additionally need to check whether it was on Circ Route POI
         return super.onSingleTap(event)
     }
 
@@ -190,8 +191,9 @@ class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(mapVi
 
     /////////////////////////////////////////////////////
     override fun draw(canvas: Canvas, mapView: MapView, shadow: Boolean) {
-        if (activeCategories.isEmpty())
-            return
+        // todo remove comment take next 2 lines out so route POI's not removed:
+        //if (activeCategories.isEmpty())
+        //  return
 
         super.draw(canvas, mapView, shadow)
 
@@ -368,6 +370,7 @@ class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(mapVi
                 items.add(POIOverlayItem(poi))
             }
             overlay.setItems(items as List<POIOverlayItem?>?)
+            // todo now add in the circular route POI's into items
         }
 
         companion object {

@@ -1,6 +1,5 @@
 package net.cyclestreets.routing
 
-import android.location.Location
 import java.io.IOException
 
 import android.text.TextUtils
@@ -9,6 +8,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import net.cyclestreets.CycleStreetsPreferences
+import net.cyclestreets.api.POI
+import net.cyclestreets.api.POICategories
+import net.cyclestreets.api.POICategory
 
 import net.cyclestreets.routing.domain.GeoPointDeserializer
 import net.cyclestreets.routing.domain.JourneyDomainObject
@@ -16,7 +18,6 @@ import net.cyclestreets.routing.domain.SegmentDomainObject
 import net.cyclestreets.util.Logging
 import net.cyclestreets.util.Turn
 import org.osmdroid.api.IGeoPoint
-import org.osmdroid.util.GeoPoint
 
 private val TAG = Logging.getTag(Journey::class.java)
 
@@ -24,6 +25,7 @@ class Journey private constructor(wp: Waypoints? = null) {
     val waypoints: Waypoints = wp ?: Waypoints.none()
     val segments: Segments = Segments()
     val elevation: ElevationProfile = ElevationProfile()
+    val circularRoutePois = mutableSetOf<POI>()
     private var activeSegment: Int = 0
 
     companion object {
@@ -153,6 +155,7 @@ class Journey private constructor(wp: Waypoints? = null) {
 
             populateWaypoints(jdo)
             populateSegments(jdo)
+            populatePois(jdo)
             generateStartAndFinishSegments(jdo)
 
             return journey
@@ -194,6 +197,42 @@ class Journey private constructor(wp: Waypoints? = null) {
                 )
                 journey.elevation.add(sdo.segmentProfile)
             }
+        }
+        // For circular routes.
+        // todo not sure if this is necessary or if can be accessed directly
+        private fun populatePois(jdo: JourneyDomainObject) {
+            for (poi in jdo.pois) {
+                val circularRoutePoi = POI(0,
+                        poi.name,
+                        "",
+                        poi.website,
+                        "",
+                        "",
+                        poi.latitude.toDouble(),
+                        poi.longitude.toDouble())
+                val category = findPoiCategory(poi.poitypeId)
+                // Shouldn't ever have a poi which doesn't have a matching category,
+                // but if it does happen, don't add it to the list to be displayed:
+                if (category != null) {
+                    circularRoutePoi.setCategory(category)
+                    journey.circularRoutePois.add(circularRoutePoi)
+                }
+            }
+        }
+
+        private fun findPoiCategory(poiCategoryKey: String?): POICategory? {
+            val allCategories = POICategories.get()
+            for (cat in allCategories) {
+                if (poiCategoryKey == cat.key) {
+                    return cat
+                }
+            }
+            // todo Find the default drawable and return this with empty strings in key and name?
+            // todo - see PoiTypesDto.kt
+            // todo - need to get context
+            //val defaultIcon = ResourcesCompat.getDrawable(context.resources, R.drawable.poi_attractions, null)!!
+            //return POICategory("", "", null)
+            return null
         }
 
         private fun getStreetName(name: String): String {

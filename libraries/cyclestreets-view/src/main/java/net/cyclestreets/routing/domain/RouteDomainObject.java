@@ -17,6 +17,7 @@ public final class RouteDomainObject {
   public int itinerary;
   @JsonProperty
   public String finish;
+  // todo - remove the next two as no longer required?
   @JsonProperty
   public double start_longitude;
   @JsonProperty

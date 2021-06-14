@@ -135,6 +135,7 @@ public abstract class LiveItemOverlay<T extends OverlayItem>
         items().add(item);
     if (items().size() > 500)  // arbitrary figure
       items().remove(items().subList(0, 100));
+    // todo  after removing 100 items, add circ route pois back in if they aren't already there?
     loading_ = false;
     redraw();
   }

@@ -10,9 +10,9 @@ class PoiDomainObject {
     @JsonProperty
     val website: String? = null
     @JsonProperty
-    val longitude: Float = 0.0f
+    val longitude: Float = 0.0F
     @JsonProperty
-    val latitude: Float = 0.0f
+    val latitude: Float = 0.0F
     @JsonProperty
     val sequenceId: Short = 0
 }
