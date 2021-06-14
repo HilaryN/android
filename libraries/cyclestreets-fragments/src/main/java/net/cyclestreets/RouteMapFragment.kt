@@ -40,8 +40,8 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener {
 
         overlayPushBottom(RouteHighlightOverlay(requireContext(), mapView()))
         //overlayPushBottom(POIOverlay(mapView())) // todo remove this if definitely don't need
-        overlayPushBottom(RouteOverlay())
         overlayPushBottom(CircularRoutePOIOverlay(mapView()))
+        overlayPushBottom(RouteOverlay())
 
         routeSetter = TapToRouteOverlay(mapView(), this)
         overlayPushTop(routeSetter)
