@@ -42,7 +42,7 @@ class CircularRouteActivity : AppCompatActivity() {
         currentValue = findViewById(R.id.circularRouteCurrentValue)
         POITextView = findViewById(R.id.POITextView)
 
-        POITextView.text = String.format(this.getString(R.string.num_pois_selected), viewModel.activeCategories.count())
+        POITextView.text = String.format(this.getString(R.string.num_poitypes_selected), viewModel.activeCategories.count())
         val durationOrDistanceTab = findViewById<TabLayout>(R.id.circularRouteDurationOrDistanceTab)
         // If screen has been rotated, get previously-selected tab and make sure it is selected
         durationOrDistanceTab.getTabAt(viewModel.currentTab)?.let { tab ->
@@ -103,7 +103,7 @@ class CircularRouteActivity : AppCompatActivity() {
         Dialog.listViewDialog(this, R.string.poi_menu_title, poiAdapter,
                 { _, _ ->
                     viewModel.activeCategories = poiAdapter.chosenCategories()
-                    POITextView.text = String.format(this.getString(R.string.num_pois_selected), viewModel.activeCategories.count())
+                    POITextView.text = String.format(this.getString(R.string.num_poitypes_selected), viewModel.activeCategories.count())
                 },
                 { _, _ ->
                 })

@@ -155,7 +155,7 @@ class Journey private constructor(wp: Waypoints? = null) {
 
             populateWaypoints(jdo)
             populateSegments(jdo)
-            populatePois(jdo)
+            //populatePois(jdo)
             generateStartAndFinishSegments(jdo)
 
             return journey

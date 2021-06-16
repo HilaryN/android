@@ -44,9 +44,9 @@ object Route {
     fun plotCircularRoute(plan: String,
                           distance: Int?,
                           duration: Int?,
-                          pois: String?,
+                          poiTypes: String?,
                           context: Context) {
-        val query = CycleStreetsRoutingTask(plan, 0, context, distance, duration, pois)
+        val query = CycleStreetsRoutingTask(plan, 0, context, distance, duration, poiTypes)
         query.execute(waypoints_)
     }
 

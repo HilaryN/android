@@ -128,5 +128,5 @@
   <string name="mins">mins</string>
   <string name="choose_pois_to_route_via">Optionally, choose Points of Interest to route via:</string>
   <string name="pois">POIs</string>
-  <string name="num_pois_selected">%1$s selected</string>
+  <string name="num_poitypes_selected">%1$s selected</string>
 </resources>
