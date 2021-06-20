@@ -1,5 +1,6 @@
 package net.cyclestreets.routing
 
+import android.content.Context
 import java.io.IOException
 
 import android.text.TextUtils
@@ -11,6 +12,7 @@ import net.cyclestreets.CycleStreetsPreferences
 import net.cyclestreets.api.POI
 import net.cyclestreets.api.POICategories
 import net.cyclestreets.api.POICategory
+import net.cyclestreets.api.client.dto.poiIcon
 
 import net.cyclestreets.routing.domain.GeoPointDeserializer
 import net.cyclestreets.routing.domain.JourneyDomainObject
@@ -32,8 +34,8 @@ class Journey private constructor(wp: Waypoints? = null) {
         val NULL_JOURNEY: Journey = Journey()
         init { NULL_JOURNEY.activeSegment = -1 }
 
-        fun loadFromJson(domainJson: String, waypoints: Waypoints?, name: String?): Journey {
-            return JourneyFactory(waypoints, name).parse(domainJson)
+        fun loadFromJson(domainJson: String, waypoints: Waypoints?, name: String?, poiTypes: String?, context: Context): Journey {
+            return JourneyFactory(waypoints, name).parse(domainJson, poiTypes, context)
         }
     }
 
@@ -142,7 +144,7 @@ class Journey private constructor(wp: Waypoints? = null) {
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         }
 
-        internal fun parse(domainJson: String): Journey {
+        internal fun parse(domainJson: String, poiTypes: String?, context: Context): Journey {
             // I guess this is in case the units have changed without the app restarting
             Segment.formatter = DistanceFormatter.formatter(CycleStreetsPreferences.units())
 
@@ -153,9 +155,16 @@ class Journey private constructor(wp: Waypoints? = null) {
                 throw RuntimeException("Coding error - unable to parse domain JSON", e)
             }
 
+
             populateWaypoints(jdo)
             populateSegments(jdo)
-            //populatePois(jdo)
+            // todo: use poiTypes to determine whether to populate pois and context to get icons
+            // Currently (June 2021) the API returns POIs whether or not they were requested,
+            // so need to check whether they were requested before adding them to the list to be displayed.
+            if (poiTypes != null) { //todo: check for null, or for empty string?
+                populatePois(jdo, poiTypes, context)
+            }
+            //
             generateStartAndFinishSegments(jdo)
 
             return journey
@@ -200,7 +209,14 @@ class Journey private constructor(wp: Waypoints? = null) {
         }
         // For circular routes.
         // todo not sure if this is necessary or if can be accessed directly
-        private fun populatePois(jdo: JourneyDomainObject) {
+        private fun populatePois(jdo: JourneyDomainObject, poiTypes: String, context: Context) {
+            // List of POI types requested by user for circular route
+            val poiTypesList = poiTypes.split(",")
+            // For each one, get the icon to be displayed
+            val circularRoutePOICategories = mutableListOf<POICategory>()
+            for (type in poiTypesList) {
+                circularRoutePOICategories.add(POICategory(type, "", poiIcon(context, type)))
+            }
             for (poi in jdo.pois) {
                 val circularRoutePoi = POI(0,
                         poi.name,
@@ -210,7 +226,7 @@ class Journey private constructor(wp: Waypoints? = null) {
                         "",
                         poi.latitude.toDouble(),
                         poi.longitude.toDouble())
-                val category = findPoiCategory(poi.poitypeId)
+                val category = findPoiCategory(poi.poitypeId, circularRoutePOICategories)
                 // Shouldn't ever have a poi which doesn't have a matching category,
                 // but if it does happen, don't add it to the list to be displayed:
                 if (category != null) {
@@ -220,18 +236,12 @@ class Journey private constructor(wp: Waypoints? = null) {
             }
         }
 
-        private fun findPoiCategory(poiCategoryKey: String?): POICategory? {
-            val allCategories = POICategories.get()
-            for (cat in allCategories) {
+        private fun findPoiCategory(poiCategoryKey: String?, circularRoutePOICategories: List<POICategory>): POICategory? {
+            for (cat in circularRoutePOICategories) {
                 if (poiCategoryKey == cat.key) {
                     return cat
                 }
             }
-            // todo Find the default drawable and return this with empty strings in key and name?
-            // todo - see PoiTypesDto.kt
-            // todo - need to get context
-            //val defaultIcon = ResourcesCompat.getDrawable(context.resources, R.drawable.poi_attractions, null)!!
-            //return POICategory("", "", null)
             return null
         }
 

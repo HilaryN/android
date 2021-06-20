@@ -44,7 +44,7 @@ abstract class RoutingTask<Params> protected constructor(private val initialMsg:
                     throw ErrorFromServerException(error!!)
                 }
                 else ->
-                    RouteData(json, waypoints, null)
+                    RouteData(json, waypoints, null, poiTypes)
             }
         } catch (e: Exception) {
             if (error == null) {
