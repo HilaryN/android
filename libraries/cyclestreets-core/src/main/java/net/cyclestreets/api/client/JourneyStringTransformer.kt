@@ -48,7 +48,137 @@ private const val V1API_XML_JOLT_SPEC = """[{
 // For circular route, input json has a single waypoint.
 // It may also have a single poi or an array of pois.
 // Convert these to arrays, do the transformation, then convert back to arrays if single
+// Note (if debugging) that the waypoints in the output may appear at the beginning or in the original place,
+// depending on whether they are an array of waypoints (A-B route) or a single item (circular route).
 private const val V1API_JSON_JOLT_SPEC = """
+[// First, convert single waypoint / poi to array
+{
+    "operation": "cardinality",
+    "spec": {
+    "waypoint": "MANY",
+    "poi": "MANY"
+    }
+},
+// Now do the transformation, but note that 1-element arrays will get converted back to strings...
+{
+  "operation": "shift",
+  "spec": {
+    
+    "waypoint": {
+      "*": { "\\@attributes": "waypoints" }},
+    
+    "marker": {
+      "*": {
+        "\\@attributes": {
+          "type": {
+            "route": { "@(2)": "route" },
+            "segment": { "@(2)": "segments[]" }
+          }
+        }
+      }
+    },
+    "poi": {
+      "*": { "\\@attributes": "pois" }
+    },
+   
+    "error": "Error"
+  }
+},
+// ... so we need to convert the strings back to arrays!
+{
+    "operation": "cardinality",
+    "spec": {
+    "waypoints": "MANY",
+    "pois": "MANY"
+    }
+}
+]"""
+
+// Works, but needs pois converting back to array
+private const val V1API_JSON_JOLT_SPEC9 = """ 
+[// First, convert single waypoint to array
+{
+    "operation": "cardinality",
+    "spec": {
+    "waypoint": "MANY",
+    "poi": "MANY"
+    }
+},
+// Now do the transformation, but note that 1-element array will get converted back to string...
+{
+  "operation": "shift",
+  "spec": {
+    
+    "waypoint": {
+      "*": { "\\@attributes": "waypoints" }},
+    
+    "marker": {
+      "*": {
+        "\\@attributes": {
+          "type": {
+            "route": { "@(2)": "route" },
+            "segment": { "@(2)": "segments[]" }
+          }
+        }
+      }
+    },
+    "poi": {
+      "*": { "\\@attributes": "pois" }
+    },
+   
+    "error": "Error"
+  }
+},
+// ... so we need to convert the string back to an array!
+{
+    "operation": "cardinality",
+    "spec": {
+        "waypoints": "MANY"
+    }
+}
+]"""
+
+
+//Errors
+private const val V1API_JSON_JOLT_SPEC8 = """
+[// First, convert single waypoint / poi to array
+{
+    "operation": "cardinality",
+    "spec": {
+    "waypoint": "MANY"
+    "poi": "MANY"
+    }
+},
+// Now do the transformation, but note that 1-element arrays will get converted back to strings...
+{
+  "operation": "shift",
+  "spec": {
+    
+    "waypoint": {
+      "*": { "\\@attributes": "waypoints" }},
+    
+    "marker": {
+      "*": {
+        "\\@attributes": {
+          "type": {
+            "route": { "@(2)": "route" },
+            "segment": { "@(2)": "segments[]" }
+          }
+        }
+      }
+    },
+    "poi": {
+      "*": { "\\@attributes": "pois" }
+    },
+   
+    "error": "Error"
+  }
+},
+// ... so we need to convert the strings back to arrays!
+
+]"""
+// Errors
+private const val V1API_JSON_JOLT_SPEC7 = """
 [// First, convert single waypoint / poi to array
 {
     "operation": "cardinality",
@@ -129,7 +259,7 @@ private const val V1API_JSON_JOLT_SPEC6 = """
 
 // Output:
 // "waypoints":[{"longitude":"0.18871","latitude":"51.29565","sequenceId":"1"}] (at end of json)
-private const val V1API_JSON_JOLT_SPEC5 = """
+private const val V1API_JSON_JOLT_SPEC5 = """ 
 [// First, convert single waypoint to array
 {
     "operation": "cardinality",
