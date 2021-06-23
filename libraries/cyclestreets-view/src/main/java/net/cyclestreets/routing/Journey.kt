@@ -217,8 +217,10 @@ class Journey private constructor(wp: Waypoints? = null) {
             for (type in poiTypesList) {
                 circularRoutePOICategories.add(POICategory(type, "", poiIcon(context, type)))
             }
+            // For circular route pois, the id isn't returned in the API, so will create an artificial one.
+            var id = 0
             for (poi in jdo.pois) {
-                val circularRoutePoi = POI(0,
+                val circularRoutePoi = POI(id,
                         poi.name,
                         "",
                         poi.website,
@@ -233,6 +235,7 @@ class Journey private constructor(wp: Waypoints? = null) {
                     circularRoutePoi.setCategory(category)
                     journey.circularRoutePois.add(circularRoutePoi)
                 }
+                id++
             }
         }
 
