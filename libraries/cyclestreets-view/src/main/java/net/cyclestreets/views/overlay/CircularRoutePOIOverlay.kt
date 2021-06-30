@@ -34,7 +34,8 @@ class CircularRoutePOIOverlay(mapView: CycleMapView): POIOverlay(mapView), Pause
     }
 
     override fun onResetJourney() {
-        // TODO clear POI's'
+        // TODO clear POI's
+        // todo remove circ route pois without removing POIs requested for display
     }
 
 /*    override fun fetchItemsInBackground(mapCentre: IGeoPoint,

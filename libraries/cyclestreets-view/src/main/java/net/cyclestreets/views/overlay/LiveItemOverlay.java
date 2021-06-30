@@ -102,8 +102,8 @@ public abstract class LiveItemOverlay<T extends OverlayItem>
 
   @Override
   public boolean onZoom(final ZoomEvent event) {
-    if (event.getZoomLevel() < zoomLevel_)
-      items().clear();
+    if (event.getZoomLevel() < zoomLevel_)  // Zoomed out
+      items().clear();  // todo should only clear out non-circ route POIs
     zoomLevel_ = (int)event.getZoomLevel();
     refreshItems();
     return true;
