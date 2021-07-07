@@ -1,22 +1,15 @@
 package net.cyclestreets.views.overlay
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Point
-import android.graphics.Rect
-import android.net.Uri
 import android.os.AsyncTask
 import android.util.Log
 import android.view.*
-import android.webkit.URLUtil
 import android.widget.BaseAdapter
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat.startActivity
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import net.cyclestreets.Undoable
 import net.cyclestreets.api.POI
@@ -26,9 +19,11 @@ import net.cyclestreets.iconics.IconicsHelper.materialIcon
 import net.cyclestreets.util.*
 import net.cyclestreets.view.R
 import net.cyclestreets.views.CycleMapView
+import net.cyclestreets.views.overlay.Bubble.hideBubble
+import net.cyclestreets.views.overlay.Bubble.hideOrShowBubble
+import net.cyclestreets.views.overlay.Bubble.showBubble
 import net.cyclestreets.views.overlay.POIOverlay.POIOverlayItem
 import org.osmdroid.api.IGeoPoint
-import org.osmdroid.api.IProjection
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.util.BoundingBox
@@ -45,15 +40,15 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
     private val context: Context = mapView.context
     private val activeCategories: MutableList<POICategory> = ArrayList()
     private val overlays: OverlayHelper = OverlayHelper(mapView)
-    private val curScreenCoords = Point()
 
     private val poiIcon = materialIcon(context, GoogleMaterial.Icon.gmd_place)
 
-    private var activeItem: POIOverlayItem? = null
     private var lastFix: IGeoPoint? = null
-    private var bubble: Rect? = null
     private var chooserShowing: Boolean = false
-    private val tapHereText = context.getString(R.string.tap_here)
+
+    init {
+        Bubble.initialise(context, mapView)
+    }
 
     /////////////////////////////////////////////////////
     private fun allCategories(): POICategories {
@@ -62,10 +57,6 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
 
     private fun routeOverlay(): TapToRouteOverlay? {
         return overlays.get(TapToRouteOverlay::class.java)
-    }
-
-    private fun controller(): ControllerOverlay {
-        return overlays.controller()
     }
 
     /////////////////////////////////////////////////////
@@ -92,7 +83,8 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
         if (firstTime) {
             items().clear()
             clearLastFix()
-            activeItem = null
+            // todo set Bubble.activeItem to null and remove this line:
+            Bubble.activeItem = null
             refreshItems()
         }
     }
@@ -120,11 +112,18 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
 
     ///////////////////////////////////////////////////
     override fun onSingleTap(event: MotionEvent): Boolean {
-        if (activeItem != null && tappedInBubble(event))
+        // Check whether tapped in bubble
+        if (Bubble.onSingleTap(event, mapView().projection, context, this))
             return true
 // todo temp comment: the following checks whether tap was on a displayed POI.
         // todo Would additionally need to check whether it was on Circ Route POI
         return super.onSingleTap(event)
+    }
+
+
+    /*
+    private fun controller(): ControllerOverlay {
+        return overlays.controller()
     }
 
     private fun tappedInBubble(event: MotionEvent): Boolean {
@@ -157,15 +156,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
         }
     }
 
-    override fun onItemSingleTap(item: POIOverlayItem?): Boolean {
-        if (activeItem === item)
-            hideBubble()
-        else
-            showBubble(item!!)
-        redraw()
 
-        return true
-    }
 
     private fun showBubble(item: POIOverlayItem) {
         hideBubble()
@@ -177,13 +168,20 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
         activeItem = null
         controller().flushUndo(this)
     }
+*/
+    override fun onItemSingleTap(item: POIOverlayItem?): Boolean {
+        // todo -  replicate this fun in CircularRoutePoiOverlay
+        hideOrShowBubble(item, this)
+        redraw()
+        return true
+    }
 
     override fun onItemDoubleTap(item: POIOverlayItem?): Boolean {
         return routeMarkerAtItem(item)
     }
 
     private fun routeMarkerAtItem(item: POIOverlayItem?): Boolean {
-        hideBubble()
+        hideBubble(this)
         val o = routeOverlay() ?: return false
         o.setNextMarker(item!!.point)
         return true
@@ -197,12 +195,11 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
 
         super.draw(canvas, mapView, shadow)
 
-        if (activeItem == null)
+        if (Bubble.activeItem == null)
             return
-
-        drawBubble(canvas, mapView)
+        Bubble.drawBubble(canvas, mapView, textBrush(), urlBrush(), offset())
     }
-
+/*
     private fun drawBubble(canvas: Canvas, mapView: MapView) {
         var url = activeItem!!.poi.url()
         url = if (URLUtil.isValidUrl(url)) url else ""
@@ -241,7 +238,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
 
         canvas.restore()
     }
-
+*/
     private fun updateCategories(newCategories: List<POICategory>) {
         val removed = notIn(activeCategories, newCategories)
         val added = notIn(newCategories, activeCategories)
@@ -273,9 +270,11 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
                 items().removeAt(i)
             }
         }
-
-        if (activeItem != null && cat == activeItem!!.category())
-            activeItem = null
+// todo review this comment:
+        // Category for circular route POIs don't have name and will fail the test below, meaning they won't be removed,
+        // which is as required (though it's a bit of a fudge)
+        if (Bubble.activeItem != null && cat == Bubble.activeItem!!.category())
+            Bubble.activeItem = null
     }
 
     private fun notIn(c1: List<POICategory>,
@@ -337,7 +336,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
     }
 
     override fun onBackPressed(): Boolean {
-        hideBubble()
+        hideBubble(this)
         redraw()
         return true
     }

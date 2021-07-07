@@ -39,7 +39,7 @@ class RouteMapFragment : CycleMapFragment(), Route.Listener {
         val v = super.onCreateView(inflater, container, saved)
 
         overlayPushBottom(RouteHighlightOverlay(requireContext(), mapView()))
-        //overlayPushBottom(POIOverlay(mapView())) // todo remove this if definitely don't need
+        overlayPushBottom(POIOverlay(mapView()))
         overlayPushBottom(CircularRoutePOIOverlay(mapView()))
         overlayPushBottom(RouteOverlay())
 
