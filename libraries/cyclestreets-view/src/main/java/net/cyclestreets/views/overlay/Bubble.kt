@@ -66,7 +66,7 @@ object Bubble {
         }
     }
 
-    fun hideOrShowBubble(item: POIOverlay.POIOverlayItem?, overlay: POIOverlay) {
+    fun hideOrShowBubble(item: POIOverlay.POIOverlayItem?, overlay: Undoable) {
         if (activeItem === item)
             hideBubble(overlay)
         else

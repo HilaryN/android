@@ -159,11 +159,14 @@ class Journey private constructor(wp: Waypoints? = null) {
             populateWaypoints(jdo)
             populateSegments(jdo)
             // todo: use poiTypes to determine whether to populate pois and context to get icons
-            // Currently (June 2021) the API returns POIs whether or not they were requested,
-            // so need to check whether they were requested before adding them to the list to be displayed.
-            if (poiTypes != null) { //todo: check for null, or for empty string?
-                populatePois(jdo, poiTypes, context)
-            }
+            // Currently (June 2021) the API returns POIs whether or not they were requested.
+            // https://github.com/cyclestreets/android/issues/465#issuecomment-818049555
+            // For simplicity's sake, Will display these, even if not requested,
+            // because, in the event of opening a circular route by number
+            // there is no way of telling whether POIs were requested originally
+            //todo: test with a json which doesn't contain pois
+            populatePois(jdo, context)
+
             //
             generateStartAndFinishSegments(jdo)
 
@@ -209,14 +212,7 @@ class Journey private constructor(wp: Waypoints? = null) {
         }
         // For circular routes.
         // todo not sure if this is necessary or if can be accessed directly
-        private fun populatePois(jdo: JourneyDomainObject, poiTypes: String, context: Context) {
-            // List of POI types requested by user for circular route
-            val poiTypesList = poiTypes.split(",")
-            // For each one, get the icon to be displayed
-            val circularRoutePOICategories = mutableListOf<POICategory>()
-            for (type in poiTypesList) {
-                circularRoutePOICategories.add(POICategory(type, "", poiIcon(context, type)))
-            }
+        private fun populatePois(jdo: JourneyDomainObject, context: Context) {
             // For circular route pois, the id isn't returned in the API, so will create an artificial one.
             var id = 0
             for (poi in jdo.pois) {
@@ -228,11 +224,12 @@ class Journey private constructor(wp: Waypoints? = null) {
                         "",
                         poi.latitude.toDouble(),
                         poi.longitude.toDouble())
-                val category = findPoiCategory(poi.poitypeId, circularRoutePOICategories)
-                // Shouldn't ever have a poi which doesn't have a matching category,
+                // Shouldn't ever have a poi which doesn't have a type,
                 // but if it does happen, don't add it to the list to be displayed:
-                if (category != null) {
-                    circularRoutePoi.setCategory(category)
+                // todo test non-valid type, e.g. "blah" (should display generic icon?)
+                val type = poi.poitypeId
+                if (type != null) {
+                    circularRoutePoi.setCategory(POICategory(type, "", poiIcon(context, type)))
                     journey.circularRoutePois.add(circularRoutePoi)
                 }
                 id++

@@ -1,6 +1,7 @@
 package net.cyclestreets.views.overlay
 
 import android.content.SharedPreferences
+import net.cyclestreets.Undoable
 import net.cyclestreets.api.POI
 import net.cyclestreets.routing.Journey
 import net.cyclestreets.routing.Route
@@ -15,10 +16,10 @@ import org.osmdroid.util.BoundingBox
 
 private val TAG = Logging.getTag(CircularRoutePOIOverlay::class.java)
 
-class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route.Listener, // todo may also need Undoable (once bubble functionality added?), MapListener
-        LiveItemOverlay<POIOverlay.POIOverlayItem?>(mapView, false) {
+class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route.Listener,
+        LiveItemOverlay<POIOverlay.POIOverlayItem?>(mapView, false), Undoable {
 
-    private val controller = mapView.controller
+    private var journey: Journey? = null
 
     override fun onResume(prefs: SharedPreferences) {
         Route.registerListener(this)
@@ -28,19 +29,32 @@ class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route
         Route.unregisterListener(this)
     }
 
-    override fun onNewJourney(journey: Journey, waypoints: Waypoints) {
-        // TODO display POI's for circular route
-        //override fun onPostExecute(pois: List<POI>) {
+    override fun onNewJourney(newJourney: Journey, waypoints: Waypoints) {
+            removePois()
+            journey = newJourney
             val items: MutableList<POIOverlay.POIOverlayItem> = ArrayList()
-            for (poi in journey.circularRoutePois) {
+            for (poi in journey!!.circularRoutePois) {
                 items.add(POIOverlay.POIOverlayItem(poi))
             }
             setItems(items as List<POIOverlay.POIOverlayItem?>?)
     }
 
     override fun onResetJourney() {
-        // TODO clear POI's
-        // todo remove circ route pois without removing POIs requested for display
+        removePois()
+    }
+
+    private fun removePois() {
+        Bubble.hideBubble(this)
+        // Remove Circular Route POI's from display
+        if (journey != null) {
+            // In reverse order, otherwise it errors on last one:
+            for (i in items().indices.reversed()) {
+                if (items()[i]!!.poi in journey!!.circularRoutePois) {
+                    items().removeAt(i)
+                }
+            }
+            journey = null
+        }
     }
 
     override fun fetchItemsInBackground(mapCentre: IGeoPoint,
@@ -60,10 +74,15 @@ class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route
         // Don't want any of the functionality in the superclass, so override and do nothing / return true
         return true
     }
-    // todo temp comment: Copied from POIOverlay:
+
     override fun onItemSingleTap(item: POIOverlay.POIOverlayItem?): Boolean {
-        // todo comment out following line for now
-        //Bubble.hideOrShowBubble(item, controller, this)
+        Bubble.hideOrShowBubble(item, this)
+        redraw()
+        return true
+    }
+
+    override fun onBackPressed(): Boolean {
+        Bubble.hideBubble(this)
         redraw()
         return true
     }

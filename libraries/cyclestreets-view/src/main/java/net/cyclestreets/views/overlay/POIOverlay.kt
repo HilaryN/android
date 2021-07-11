@@ -21,7 +21,6 @@ import net.cyclestreets.view.R
 import net.cyclestreets.views.CycleMapView
 import net.cyclestreets.views.overlay.Bubble.hideBubble
 import net.cyclestreets.views.overlay.Bubble.hideOrShowBubble
-import net.cyclestreets.views.overlay.Bubble.showBubble
 import net.cyclestreets.views.overlay.POIOverlay.POIOverlayItem
 import org.osmdroid.api.IGeoPoint
 import org.osmdroid.events.MapListener
@@ -120,57 +119,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
         return super.onSingleTap(event)
     }
 
-
-    /*
-    private fun controller(): ControllerOverlay {
-        return overlays.controller()
-    }
-
-    private fun tappedInBubble(event: MotionEvent): Boolean {
-        val pj = mapView().projection
-        val screenRect = pj.intrinsicScreenRect
-        val eventX = screenRect.left + event.x.toInt()
-        val eventY = screenRect.top + event.y.toInt()
-
-        if (!bubble!!.contains(eventX, eventY))
-            return false
-        // Check if tapped on link
-        if (eventY < Draw.titleSectionY) {
-            showWebpage(activeItem)
-            return true
-        }
-
-        return routeMarkerAtItem(activeItem)
-    }
-
-    private fun showWebpage(item: POIOverlayItem?) {
-        val url = item!!.poi.url()
-
-        if (url != "") {
-            val webpage = Uri.parse(url)
-            val intent = Intent(Intent.ACTION_VIEW, webpage)
-
-            if (intent.resolveActivity(context.getPackageManager()) != null) {
-                startActivity(context, intent, null)
-            }
-        }
-    }
-
-
-
-    private fun showBubble(item: POIOverlayItem) {
-        hideBubble()
-        activeItem = item
-        controller().pushUndo(this)
-    }
-
-    private fun hideBubble() {
-        activeItem = null
-        controller().flushUndo(this)
-    }
-*/
     override fun onItemSingleTap(item: POIOverlayItem?): Boolean {
-        // todo -  replicate this fun in CircularRoutePoiOverlay
         hideOrShowBubble(item, this)
         redraw()
         return true
@@ -199,46 +148,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
             return
         Bubble.drawBubble(canvas, mapView, textBrush(), urlBrush(), offset())
     }
-/*
-    private fun drawBubble(canvas: Canvas, mapView: MapView) {
-        var url = activeItem!!.poi.url()
-        url = if (URLUtil.isValidUrl(url)) url else ""
-        val title = if (activeItem!!.title.isNullOrEmpty() && (activeItem!!.poi.url().isNotBlank())) tapHereText else activeItem!!.title
 
-        val bubbleText = listOf(
-            title,
-            activeItem!!.snippet,
-            activeItem!!.poi.phone(),
-            activeItem!!.poi.openingHours()
-        ).filterNot { it.isNullOrBlank() }.joinToString("\n")
-
-        // find the right place
-        val pj: IProjection = mapView.projection
-        pj.toPixels(activeItem!!.point, curScreenCoords)
-
-        val x = curScreenCoords.x
-        val y = curScreenCoords.y
-
-        val matrix = mapView.matrix
-        val matrixValues = FloatArray(9)
-        matrix.getValues(matrixValues)
-
-        val scaleX = Math.sqrt(matrixValues[Matrix.MSCALE_X]
-                * matrixValues[Matrix.MSCALE_X] + matrixValues[Matrix.MSKEW_Y]
-                * matrixValues[Matrix.MSKEW_Y].toDouble()).toFloat()
-        val scaleY = Math.sqrt(matrixValues[Matrix.MSCALE_Y]
-                * matrixValues[Matrix.MSCALE_Y] + matrixValues[Matrix.MSKEW_X]
-                * matrixValues[Matrix.MSKEW_X].toDouble()).toFloat()
-
-        canvas.save()
-        canvas.rotate(-mapView.mapOrientation, x.toFloat(), y.toFloat())
-        canvas.scale(1 / scaleX, 1 / scaleY, x.toFloat(), y.toFloat())
-
-        bubble = Draw.drawBubble(canvas, textBrush(), urlBrush(), offset(), cornerRadius(), curScreenCoords, bubbleText, url, title)
-
-        canvas.restore()
-    }
-*/
     private fun updateCategories(newCategories: List<POICategory>) {
         val removed = notIn(activeCategories, newCategories)
         val added = notIn(newCategories, activeCategories)
