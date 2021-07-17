@@ -43,12 +43,8 @@ object Bubble {
         // Check if tapped on link
         if (eventY < Draw.titleSectionY) {
             showWebpage(activeItem, context)
-            // return true // todo remove line - moved to below
         }
-        // todo My thought is to return true here (and remove route marker fun)
-        // Putting a marker where the bubble was doesn't really make sense.
-        // User can always tap again once the bubble has gone if they want to place a marker.
-        //return routeMarkerAtItem(activeItem)
+
         hideBubble(overlay)
         return true
     }

@@ -82,7 +82,6 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
         if (firstTime) {
             items().clear()
             clearLastFix()
-            // todo set Bubble.activeItem to null and remove this line:
             Bubble.activeItem = null
             refreshItems()
         }
@@ -114,8 +113,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
         // Check whether tapped in bubble
         if (Bubble.onSingleTap(event, mapView().projection, context, this))
             return true
-// todo temp comment: the following checks whether tap was on a displayed POI.
-        // todo Would additionally need to check whether it was on Circ Route POI
+        // The following checks whether tap was on a displayed POI:
         return super.onSingleTap(event)
     }
 
@@ -138,9 +136,8 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
 
     /////////////////////////////////////////////////////
     override fun draw(canvas: Canvas, mapView: MapView, shadow: Boolean) {
-        // todo remove comment take next 2 lines out so route POI's not removed:
-        //if (activeCategories.isEmpty())
-        //  return
+        if (activeCategories.isEmpty())
+          return
 
         super.draw(canvas, mapView, shadow)
 
@@ -180,9 +177,7 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
                 items().removeAt(i)
             }
         }
-// todo review this comment:
-        // Category for circular route POIs don't have name and will fail the test below, meaning they won't be removed,
-        // which is as required (though it's a bit of a fudge)
+
         if (Bubble.activeItem != null && cat == Bubble.activeItem!!.category())
             Bubble.activeItem = null
     }
@@ -279,7 +274,6 @@ open class POIOverlay(mapView: CycleMapView) : LiveItemOverlay<POIOverlayItem?>(
                 items.add(POIOverlayItem(poi))
             }
             overlay.setItems(items as List<POIOverlayItem?>?)
-            // todo now add in the circular route POI's into items
         }
 
         companion object {

@@ -2,7 +2,6 @@ package net.cyclestreets.views.overlay
 
 import android.content.SharedPreferences
 import net.cyclestreets.Undoable
-import net.cyclestreets.api.POI
 import net.cyclestreets.routing.Journey
 import net.cyclestreets.routing.Route
 import net.cyclestreets.routing.Waypoints
@@ -19,7 +18,7 @@ private val TAG = Logging.getTag(CircularRoutePOIOverlay::class.java)
 class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route.Listener,
         LiveItemOverlay<POIOverlay.POIOverlayItem?>(mapView, false), Undoable {
 
-    private var journey: Journey? = null
+    private var currentJourney: Journey? = null
 
     override fun onResume(prefs: SharedPreferences) {
         Route.registerListener(this)
@@ -29,11 +28,11 @@ class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route
         Route.unregisterListener(this)
     }
 
-    override fun onNewJourney(newJourney: Journey, waypoints: Waypoints) {
+    override fun onNewJourney(journey: Journey, waypoints: Waypoints) {
             removePois()
-            journey = newJourney
+            currentJourney = journey
             val items: MutableList<POIOverlay.POIOverlayItem> = ArrayList()
-            for (poi in journey!!.circularRoutePois) {
+            for (poi in currentJourney!!.circularRoutePois) {
                 items.add(POIOverlay.POIOverlayItem(poi))
             }
             setItems(items as List<POIOverlay.POIOverlayItem?>?)
@@ -46,22 +45,21 @@ class CircularRoutePOIOverlay(mapView: CycleMapView): PauseResumeListener, Route
     private fun removePois() {
         Bubble.hideBubble(this)
         // Remove Circular Route POI's from display
-        if (journey != null) {
+        if (currentJourney != null) {
             // In reverse order, otherwise it errors on last one:
             for (i in items().indices.reversed()) {
-                if (items()[i]!!.poi in journey!!.circularRoutePois) {
+                if (items()[i]!!.poi in currentJourney!!.circularRoutePois) {
                     items().removeAt(i)
                 }
             }
-            journey = null
+            currentJourney = null
         }
     }
 
     override fun fetchItemsInBackground(mapCentre: IGeoPoint,
                                         zoom: Int,
                                         boundingBox: BoundingBox): Boolean {
-        //todo - don't need to do anything here.  Need to consider naming of this function in super class as inaccurate name in this case
-        // Return false so that "Loading" message doesn't appear?
+        // Return false so that "Loading" message doesn't appear
         return false
     }
 
