@@ -29,6 +29,7 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
     private val screenPos = Point()
     private val bitmapTransform = Matrix()
     private val bitmapPaint = Paint()
+    private val boldTextBrush = Brush.createBoldTextBrush(offset(mapView.getContext()))
 
     private val waymarkers = ArrayList<OverlayItem>()
 
@@ -121,11 +122,11 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
         val bitmap = createScaledBitmap(originalSizeBitmap,
                     (originalSizeBitmap.width * increaseSize).toInt(),
                     (originalSizeBitmap.height * increaseSize).toInt(),
-                false)
+                true)
 
         val halfWidth = bitmap.width / 2
         val halfHeight = bitmap.height / 2
-// todo this can be a local var:
+
         bitmapTransform.apply {
             setTranslate((-halfWidth).toFloat(), (-halfHeight).toFloat())
             postScale(1 / transformValues[Matrix.MSCALE_X], 1 / transformValues[Matrix.MSCALE_Y])
@@ -140,15 +141,13 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
 //        canvas.drawRect(screenPos.x.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bounds.bottom.toFloat(), Brush.BlackOutline)
         /////////////////////////////////////////////////////////////////////////////
 
+        val x = screenPos.x.toFloat()
+        val y = screenPos.y.toFloat()
         canvas.apply {
             save()
             rotate(-projection.orientation, screenPos.x.toFloat(), screenPos.y.toFloat())
             drawBitmap(bitmap, bitmapTransform, bitmapPaint)
-            // todo parms are hacked for now (e.g. just calc the size once):
-            val x = screenPos.x.toFloat()
-            val y = screenPos.y.toFloat()
-            //drawText("X", x - halfWidth/8, screenPos.y.toFloat() - halfHeight/2, Brush.createTextBrush(offset(mapView.getContext())))
-            drawText(waymarkPosition, x - halfWidth/10, (y - halfHeight/2), Brush.createBoldTextBrush(offset(mapView.getContext())))
+            drawText(waymarkPosition, x - halfWidth/10, (y - halfHeight/2), boldTextBrush)
             restore()
         }
     }
