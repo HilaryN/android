@@ -52,6 +52,15 @@ public class Brush {
     return paint;
   }
 
+  public static Paint createBoldTextBrush(final int size) {
+
+    final Paint paint = createTextBrush(size, 0, 0, 0);
+
+    paint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+
+    return paint;
+  }
+
   public static Paint createUrlBrush(final int size) {
 
     final Paint paint = createTextBrush(size);

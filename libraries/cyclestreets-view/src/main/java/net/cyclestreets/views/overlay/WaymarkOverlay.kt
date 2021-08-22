@@ -2,15 +2,14 @@ package net.cyclestreets.views.overlay
 
 import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.Point
+import android.graphics.*
+import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
 import net.cyclestreets.routing.Journey
 import net.cyclestreets.routing.Route
 import net.cyclestreets.routing.Waypoints
+import net.cyclestreets.util.Brush
 import net.cyclestreets.view.R
 import net.cyclestreets.views.CycleMapView
 import org.osmdroid.api.IGeoPoint
@@ -97,33 +96,59 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
     override fun draw(canvas: Canvas, mapView: MapView, shadow: Boolean) {
         val projection = mapView.projection
 
-        waymarkers.forEach { wp -> drawMarker(canvas, projection, wp) }
+        waymarkers.forEach { wp -> drawMarker(canvas, projection, wp, waymarkers.indexOf(wp), waymarkers.size) }
     }
 
     private fun drawMarker(canvas: Canvas,
                            projection: Projection,
-                           marker: OverlayItem) {
+                           marker: OverlayItem,
+                           index: Int,
+                           size: Int) {
+
+        val waymarkPosition = when (index) {
+                                    0 -> "S"                    // Starting waymark
+                                    size - 1 -> "F"             // Finishing waymark
+                                    else -> {index.toString()}  // Numbered intermediate waymark
+        }
         projection.toPixels(marker.point, screenPos)
 
         val transform = mapView.matrix
         val transformValues = FloatArray(9)
         transform.getValues(transformValues)
 
-        val bitmap = getBitmapFromDrawable(marker.drawable)
+        val originalSizeBitmap = getBitmapFromDrawable(marker.drawable)
+        val increaseSize = 2.3
+        val bitmap = createScaledBitmap(originalSizeBitmap,
+                    (originalSizeBitmap.width * increaseSize).toInt(),
+                    (originalSizeBitmap.height * increaseSize).toInt(),
+                false)
 
         val halfWidth = bitmap.width / 2
         val halfHeight = bitmap.height / 2
-
+// todo this can be a local var:
         bitmapTransform.apply {
             setTranslate((-halfWidth).toFloat(), (-halfHeight).toFloat())
             postScale(1 / transformValues[Matrix.MSCALE_X], 1 / transformValues[Matrix.MSCALE_Y])
             postTranslate(screenPos.x.toFloat(), screenPos.y.toFloat())
         }
+// todo temp this is just to draw a provisional rectangle so I can see the boundaries of the bitmap:
+//        val bounds = Rect()
+//        bounds.left = screenPos.x
+//        bounds.right = screenPos.x + originalSizeBitmap.width
+//        bounds.top = screenPos.y - originalSizeBitmap.height
+//        bounds.bottom = screenPos.y
+//        canvas.drawRect(screenPos.x.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bounds.bottom.toFloat(), Brush.BlackOutline)
+        /////////////////////////////////////////////////////////////////////////////
 
         canvas.apply {
             save()
             rotate(-projection.orientation, screenPos.x.toFloat(), screenPos.y.toFloat())
             drawBitmap(bitmap, bitmapTransform, bitmapPaint)
+            // todo parms are hacked for now (e.g. just calc the size once):
+            val x = screenPos.x.toFloat()
+            val y = screenPos.y.toFloat()
+            //drawText("X", x - halfWidth/8, screenPos.y.toFloat() - halfHeight/2, Brush.createTextBrush(offset(mapView.getContext())))
+            drawText(waymarkPosition, x - halfWidth/10, (y - halfHeight/2), Brush.createBoldTextBrush(offset(mapView.getContext())))
             restore()
         }
     }
