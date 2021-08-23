@@ -13,6 +13,10 @@
         android:key="confirm-new-route"
         android:title="Confirm start new route"
         android:defaultValue="true" />
+    <CheckBoxPreference
+        android:key="show-waymark-numbers"
+        android:title="Show waymark numbers"
+        android:defaultValue="false" />
   </PreferenceScreen>
 
   <PreferenceScreen

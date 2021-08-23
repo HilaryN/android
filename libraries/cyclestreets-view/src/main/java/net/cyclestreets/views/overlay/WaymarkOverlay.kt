@@ -6,6 +6,7 @@ import android.graphics.*
 import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
+import net.cyclestreets.CycleStreetsPreferences.showWaymarkNumbers
 import net.cyclestreets.routing.Journey
 import net.cyclestreets.routing.Route
 import net.cyclestreets.routing.Waypoints
@@ -117,12 +118,13 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
         val transformValues = FloatArray(9)
         transform.getValues(transformValues)
 
-        val originalSizeBitmap = getBitmapFromDrawable(marker.drawable)
-        val increaseSize = 2.3
-        val bitmap = createScaledBitmap(originalSizeBitmap,
-                    (originalSizeBitmap.width * increaseSize).toInt(),
-                    (originalSizeBitmap.height * increaseSize).toInt(),
-                true)
+//        val originalSizeBitmap = getBitmapFromDrawable(marker.drawable)
+//        val increaseSize = 2.0
+//        val bitmap = createScaledBitmap(originalSizeBitmap,
+//                    (originalSizeBitmap.width * increaseSize).toInt(),
+//                    (originalSizeBitmap.height * increaseSize).toInt(),
+//                true)
+        val bitmap = getBitmapFromDrawable(marker.drawable)
 
         val halfWidth = bitmap.width / 2
         val halfHeight = bitmap.height / 2
@@ -134,11 +136,11 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
         }
 // todo temp this is just to draw a provisional rectangle so I can see the boundaries of the bitmap:
 //        val bounds = Rect()
-//        bounds.left = screenPos.x
-//        bounds.right = screenPos.x + originalSizeBitmap.width
-//        bounds.top = screenPos.y - originalSizeBitmap.height
+//        bounds.left = screenPos.x - halfWidth/4
+//        bounds.right = screenPos.x + halfWidth/4
+//        bounds.top = screenPos.y - halfHeight
 //        bounds.bottom = screenPos.y
-//        canvas.drawRect(screenPos.x.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bounds.bottom.toFloat(), Brush.BlackOutline)
+//        canvas.drawRect(bounds.left.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bounds.bottom.toFloat(), Brush.StrongBlackOutline)
         /////////////////////////////////////////////////////////////////////////////
 
         val x = screenPos.x.toFloat()
@@ -147,7 +149,9 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
             save()
             rotate(-projection.orientation, screenPos.x.toFloat(), screenPos.y.toFloat())
             drawBitmap(bitmap, bitmapTransform, bitmapPaint)
-            drawText(waymarkPosition, x - halfWidth/10, (y - halfHeight/2), boldTextBrush)
+            if (showWaymarkNumbers())
+                //drawText(waymarkPosition, x - halfWidth/10, (y - halfHeight/2), boldTextBrush)
+                drawText(waymarkPosition, x, (y - halfHeight), boldTextBrush)
             restore()
         }
     }

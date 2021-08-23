@@ -9,6 +9,7 @@ public class Brush {
   public static Paint Grey = createFillBrush(127, 127, 127);
   public static Paint White = createFillBrush(255, 255, 255);
   public static Paint BlackOutline = createOutlineBrush(0, 0, 0);
+  public static Paint StrongBlackOutline = createStrongOutlineBrush(0, 0, 0); // todo temp used in WaymarkOverlay
   public static Paint HighlightBrush(final Context context) {
     return createFillBrush(Theme.highlightColor(context));
   }
@@ -27,6 +28,13 @@ public class Brush {
   private static Paint createOutlineBrush(final int r, final int g, final int b) {
     final Paint brush = createBrush(255, r, g, b, Style.STROKE);
     brush.setStrokeWidth(0);
+    return brush;
+  }
+// todo temp, used in WaymarkOverlay
+  private static Paint createStrongOutlineBrush(final int r, final int g, final int b) {
+    final Paint brush = createBrush(255, r, g, b, Style.STROKE);
+    brush.setStrokeWidth(20);
+    brush.setStyle(Style.STROKE);
     return brush;
   }
 

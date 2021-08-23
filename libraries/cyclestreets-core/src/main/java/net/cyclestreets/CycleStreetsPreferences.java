@@ -21,6 +21,7 @@ public class CycleStreetsPreferences
   public final static String PREF_MAPSTYLE_KEY = "mapstyle";
   public final static String PREF_MAPFILE_KEY = "mapfile";
   public final static String PREF_CONFIRM_NEW_ROUTE = "confirm-new-route";
+  public final static String PREF_SHOW_WAYMARK_NUMBERS = "show-waymark-numbers";
   public final static String PREF_USERNAME_KEY = "username";
   public final static String PREF_PASSWORD_KEY = "password";
   public final static String PREF_EMAIL_KEY = "email";
@@ -111,6 +112,10 @@ public class CycleStreetsPreferences
 
   public static boolean confirmNewRoute() {
     return getBoolean(PREF_CONFIRM_NEW_ROUTE, true);
+  }
+
+  public static boolean showWaymarkNumbers() {
+    return getBoolean(PREF_SHOW_WAYMARK_NUMBERS, false);
   }
 
   public static String uploadSize() {
