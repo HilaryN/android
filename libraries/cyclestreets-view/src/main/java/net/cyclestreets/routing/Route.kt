@@ -203,7 +203,7 @@ object Route {
     }
 
     interface Listener {
-        fun onNewJourney(journey: Journey?, waypoints: Waypoints?)
+        fun onNewJourney(journey: Journey, waypoints: Waypoints)
         fun onResetJourney()
     }
 
@@ -230,7 +230,7 @@ object Route {
             listeners_.remove(listener)
         }
 
-        fun onNewJourney(journey: Journey?, waypoints: Waypoints?) {
+        fun onNewJourney(journey: Journey, waypoints: Waypoints) {
             for (l in listeners_) l.onNewJourney(journey, waypoints)
         }
 
