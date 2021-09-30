@@ -104,10 +104,10 @@ object Route {
     private var plannedRoute_ = NULL_JOURNEY
     private var waypoints_ = plannedRoute_.waypoints
     private var db_: RouteDatabase? = null
-    private var context_: Context? = null
+    //private var context_: Context? = null
     @JvmStatic
     fun initialise(context: Context?) {
-        context_ = context
+        //context_ = context
         db_ = RouteDatabase(context)
         if (isLoaded) loadLastJourney()
     }
@@ -141,7 +141,7 @@ object Route {
             return true
         } catch (e: Exception) {
             Log.w(TAG, "Route finding failed", e)
-            Toast.makeText(context_, R.string.route_finding_failed, Toast.LENGTH_LONG).show()
+            //Toast.makeText(context_, R.string.route_finding_failed, Toast.LENGTH_LONG).show()
         }
         return false
     }
@@ -185,22 +185,23 @@ object Route {
     }
 
     private fun clearRoutePref() {
-        prefs().edit().remove(routePref).commit()
+        //prefs().edit().remove(routePref).commit()
     }
 
     private fun setRoutePref() {
-        prefs().edit().putBoolean(routePref, true).commit()
+        //prefs().edit().putBoolean(routePref, true).commit()
     }
 
     private val isLoaded: Boolean
-        private get() = prefs().getBoolean(routePref, false)
+        private get() = false //prefs().getBoolean(routePref, false)
+
     private const val routePref = "route"
-    private fun prefs(): SharedPreferences {
-        return context_!!.getSharedPreferences(
-            "net.cyclestreets.CycleStreets",
-            Context.MODE_PRIVATE
-        )
-    }
+//    private fun prefs(): SharedPreferences {
+//        return context_!!.getSharedPreferences(
+//            "net.cyclestreets.CycleStreets",
+//            Context.MODE_PRIVATE
+//        )
+//    }
 
     interface Listener {
         fun onNewJourney(journey: Journey, waypoints: Waypoints)
