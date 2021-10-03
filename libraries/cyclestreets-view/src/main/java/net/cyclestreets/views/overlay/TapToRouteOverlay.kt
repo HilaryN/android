@@ -233,7 +233,7 @@ class TapToRouteOverlay(private val mapView: CycleMapView) : Overlay(), TapListe
             TapToRoute.WAITING_TO_ROUTE,
             TapToRoute.WAITING_FOR_SECOND,
             TapToRoute.WAITING_FOR_NEXT -> waymarks.removeWaypoint()
-            TapToRoute.ALL_DONE -> Route.resetJourney()
+            TapToRoute.ALL_DONE -> Route.resetJourney(context)
         }
 
         tapState = tapState.previous(waypointsCount())

@@ -109,15 +109,15 @@ object Route {
     fun initialise(context: Context?) {
         //context_ = context
         db_ = RouteDatabase(context)
-        if (isLoaded) loadLastJourney()
+        if (isLoaded) loadLastJourney(context)
     }
 
     fun setWaypoints(waypoints: Waypoints) {
         waypoints_ = waypoints
     }
 
-    fun resetJourney() {
-        onNewJourney(null)
+    fun resetJourney(context: Context) {
+        onNewJourney(null, context)
     }
 
     fun onResume() {
@@ -135,13 +135,13 @@ object Route {
     }
 
     /////////////////////////////////////
-    fun onNewJourney(route: RouteData?): Boolean {
+    fun onNewJourney(route: RouteData?, context: Context?): Boolean {
         try {
             doOnNewJourney(route)
             return true
         } catch (e: Exception) {
             Log.w(TAG, "Route finding failed", e)
-            //Toast.makeText(context_, R.string.route_finding_failed, Toast.LENGTH_LONG).show()
+            Toast.makeText(context, R.string.route_finding_failed, Toast.LENGTH_LONG).show()
         }
         return false
     }
@@ -175,12 +175,12 @@ object Route {
         return plannedRoute_
     }
 
-    private fun loadLastJourney() {
+    private fun loadLastJourney(context: Context?) {
         val routeSummaries = storedRoutes()
         if (!storedRoutes().isEmpty()) {
             val lastRoute = routeSummaries[0]
             val route = db_!!.route(lastRoute.localId())
-            onNewJourney(route)
+            onNewJourney(route, context)
         }
     }
 

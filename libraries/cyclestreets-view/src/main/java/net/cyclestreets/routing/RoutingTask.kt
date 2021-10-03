@@ -63,7 +63,7 @@ abstract class RoutingTask<Params> protected constructor(private val initialMsg:
 
     override fun onPostExecute(route: RouteData?) {
         if (route != null)
-            Route.onNewJourney(route)
+            Route.onNewJourney(route, context)
         progressDismiss()
         if (error != null)
             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
