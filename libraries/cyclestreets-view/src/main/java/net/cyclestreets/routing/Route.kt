@@ -104,12 +104,12 @@ object Route {
     private var plannedRoute_ = NULL_JOURNEY
     private var waypoints_ = plannedRoute_.waypoints
     private var db_: RouteDatabase? = null
-    //private var context_: Context? = null
+
     @JvmStatic
     fun initialise(context: Context?) {
         //context_ = context
         db_ = RouteDatabase(context)
-        if (isLoaded) loadLastJourney(context)
+        if (isLoaded(context)) loadLastJourney(context)
     }
 
     fun setWaypoints(waypoints: Waypoints) {
@@ -137,7 +137,7 @@ object Route {
     /////////////////////////////////////
     fun onNewJourney(route: RouteData?, context: Context?): Boolean {
         try {
-            doOnNewJourney(route)
+            doOnNewJourney(route, context)
             return true
         } catch (e: Exception) {
             Log.w(TAG, "Route finding failed", e)
@@ -146,19 +146,19 @@ object Route {
         return false
     }
 
-    private fun doOnNewJourney(route: RouteData?) {
+    private fun doOnNewJourney(route: RouteData?, context: Context?) {
         if (route == null) {
             plannedRoute_ = NULL_JOURNEY
             waypoints_ = NULL_WAYPOINTS
             listeners_.onReset()
-            clearRoutePref()
+            clearRoutePref(context)
             return
         }
         plannedRoute_ = loadFromJson(route.json(), route.points(), route.name())
         db_!!.saveRoute(plannedRoute_, route.json())
         waypoints_ = plannedRoute_.waypoints
         listeners_.onNewJourney(plannedRoute_, waypoints_)
-        setRoutePref()
+        setRoutePref(context)
     }
 
     fun waypoints(): Waypoints {
@@ -184,24 +184,25 @@ object Route {
         }
     }
 
-    private fun clearRoutePref() {
-        //prefs().edit().remove(routePref).commit()
+    private fun clearRoutePref(context: Context?) {
+        prefs(context).edit().remove(routePref).commit()
     }
 
-    private fun setRoutePref() {
-        //prefs().edit().putBoolean(routePref, true).commit()
+    private fun setRoutePref(context: Context?) {
+        prefs(context).edit().putBoolean(routePref, true).commit()
     }
 
-    private val isLoaded: Boolean
-        private get() = false //prefs().getBoolean(routePref, false)
+    private fun isLoaded(context: Context?): Boolean =
+         prefs(context).getBoolean(routePref, false)
 
     private const val routePref = "route"
-//    private fun prefs(): SharedPreferences {
-//        return context_!!.getSharedPreferences(
-//            "net.cyclestreets.CycleStreets",
-//            Context.MODE_PRIVATE
-//        )
-//    }
+
+    private fun prefs(context: Context?): SharedPreferences {
+        return context!!.getSharedPreferences(
+            "net.cyclestreets.CycleStreets",
+            Context.MODE_PRIVATE
+        )
+    }
 
     interface Listener {
         fun onNewJourney(journey: Journey, waypoints: Waypoints)
