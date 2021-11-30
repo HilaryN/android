@@ -18,6 +18,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.Projection
 import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.OverlayItem
+import org.osmdroid.views.overlay.OverlayItem.HotspotPlace
 
 import java.util.ArrayList
 
@@ -31,7 +32,11 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
     private val bitmapPaint = Paint()
     private val boldTextBrush = Brush.createBoldTextBrush((offset(mapView.getContext())*0.8).toInt())
 
+    var rect_ = Rect()
+
     private val waymarkers = ArrayList<OverlayItem>()
+
+    private val CHANGE_WAYMARK_SIZE = 0.6
 
     private fun makeWisp(drawable: Int) : Drawable? {
         return ResourcesCompat.getDrawable(mapView.context.resources, drawable, null)
@@ -97,7 +102,81 @@ class WaymarkOverlay(private val mapView: CycleMapView) : Overlay(), PauseResume
     override fun draw(canvas: Canvas, mapView: MapView, shadow: Boolean) {
         val projection = mapView.projection
 
-        waymarkers.forEach { wp -> drawMarker(canvas, projection, wp, waymarkers.indexOf(wp), waymarkers.size) }
+        //waymarkers.forEach { wp -> drawMarker(canvas, projection, wp, waymarkers.indexOf(wp), waymarkers.size) }
+        waymarkers.forEach { wp -> run {projection.toPixels(wp.point, screenPos)
+            onDrawItem(canvas, wp, screenPos, ((mapView.getContext().getResources().getDisplayMetrics().density * CHANGE_WAYMARK_SIZE).toFloat()),
+                mapView.getMapOrientation())} }
+    }
+
+    private fun onDrawItem(
+        canvas: Canvas,
+        item: OverlayItem,
+        curScreenCoords: Point,
+        scale: Float,
+        mapOrientation: Float
+    ) {
+        val hotspot: HotspotPlace = item.getMarkerHotspot()
+        val marker: Drawable = item.getMarker(0)
+        boundToHotspot(marker, hotspot, scale)
+        val x = curScreenCoords.x
+        val y = curScreenCoords.y
+        val matrix: Matrix = mapView.getMatrix()
+        val matrixValues = FloatArray(9)
+        matrix.getValues(matrixValues)
+        val scaleX = Math.sqrt(
+            (matrixValues[Matrix.MSCALE_X]
+                    * matrixValues[Matrix.MSCALE_X] + matrixValues[Matrix.MSKEW_Y]
+                    * matrixValues[Matrix.MSKEW_Y]).toDouble()
+        ).toFloat()
+        val scaleY = Math.sqrt(
+            (matrixValues[Matrix.MSCALE_Y]
+                    * matrixValues[Matrix.MSCALE_Y] + matrixValues[Matrix.MSKEW_X]
+                    * matrixValues[Matrix.MSKEW_X]).toDouble()
+        ).toFloat()
+        canvas.save()
+        canvas.rotate(-mapOrientation, x.toFloat(), y.toFloat())
+        canvas.scale(1 / scaleX, 1 / scaleY, x.toFloat(), y.toFloat())
+
+        val halfWidth = (marker.intrinsicWidth).toFloat() / 2
+        val halfHeight = marker.intrinsicHeight / 2
+
+        marker.copyBounds(rect_)
+        marker.setBounds(rect_.left + x, rect_.top + y, rect_.right + x, rect_.bottom + y)
+        //marker.hei
+        marker.draw(canvas)
+        canvas.drawText("X", x - halfWidth/10, (y - halfHeight/1.8).toFloat(), boldTextBrush)
+        marker.bounds = rect_
+        canvas.restore()
+    }
+
+    private fun boundToHotspot(
+        marker: Drawable,
+        hotspot: HotspotPlace,
+        scale: Float
+    ): Drawable? {
+        var hotspot: HotspotPlace? = hotspot
+        val markerWidth = (marker.intrinsicWidth * scale).toInt()
+        val markerHeight = (marker.intrinsicHeight * scale).toInt()
+        rect_.set(0, 0, markerWidth, markerHeight)
+        if (hotspot == null) hotspot = HotspotPlace.BOTTOM_CENTER
+        when (hotspot) {
+            HotspotPlace.NONE -> {
+            }
+            HotspotPlace.CENTER -> rect_.offset(-markerWidth / 2, -markerHeight / 2)
+            //HotspotPlace.BOTTOM_CENTER -> rect_.offset(-markerWidth / 2, -markerHeight)
+            HotspotPlace.BOTTOM_CENTER -> rect_.offset(-markerWidth / 2, -markerHeight / 2)
+            HotspotPlace.TOP_CENTER -> rect_.offset(-markerWidth / 2, 0)
+            HotspotPlace.RIGHT_CENTER -> rect_.offset(-markerWidth, -markerHeight / 2)
+            HotspotPlace.LEFT_CENTER -> rect_.offset(0, -markerHeight / 2)
+            HotspotPlace.UPPER_RIGHT_CORNER -> rect_.offset(-markerWidth, 0)
+            HotspotPlace.LOWER_RIGHT_CORNER -> rect_.offset(-markerWidth, -markerHeight)
+            HotspotPlace.UPPER_LEFT_CORNER -> rect_.offset(0, 0)
+            HotspotPlace.LOWER_LEFT_CORNER -> rect_.offset(0, markerHeight)
+            else -> {
+            }
+        }
+        marker.bounds = rect_
+        return marker
     }
 
     private fun drawMarker(canvas: Canvas,
