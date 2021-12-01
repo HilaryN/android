@@ -7,6 +7,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 
+import net.cyclestreets.util.Brush;
+
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
@@ -81,6 +83,8 @@ public class ItemizedOverlay<Item extends OverlayItem> extends Overlay implement
     marker.copyBounds(rect_);
     marker.setBounds(rect_.left + x, rect_.top + y, rect_.right + x, rect_.bottom + y);
     marker.draw(canvas);
+    // todo temp:
+    //canvas.drawRect(marker.getBounds(), Brush.BlackOutline);
     marker.setBounds(rect_);
 
     canvas.restore();
