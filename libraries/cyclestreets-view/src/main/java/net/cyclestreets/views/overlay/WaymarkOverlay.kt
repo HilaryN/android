@@ -5,6 +5,7 @@ import android.content.SharedPreferences.Editor
 import android.graphics.*
 import android.graphics.Bitmap.createScaledBitmap
 import android.graphics.drawable.Drawable
+import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import net.cyclestreets.routing.Journey
 import net.cyclestreets.routing.Route
@@ -96,9 +97,15 @@ class WaymarkOverlay(private val mapView: CycleMapView) : ItemizedOverlay<Overla
     private fun makeMarker(point: IGeoPoint, label: String, icon: Drawable?): OverlayItem {
         return OverlayItem(label, label, GeoPoint(point.latitude, point.longitude)).apply {
             setMarker(icon)
-            //markerHotspot = OverlayItem.HotspotPlace.BOTTOM_CENTER
-            markerHotspot = OverlayItem.HotspotPlace.CENTER
+            markerHotspot = OverlayItem.HotspotPlace.BOTTOM_CENTER
+            //markerHotspot = OverlayItem.HotspotPlace.CENTER
         }
+    }
+
+    override fun onItemSingleTap(item: OverlayItem?): Boolean {
+        //return super.onItemSingleTap(item)
+        Toast.makeText(mapView.context, "Waymark tapped", Toast.LENGTH_LONG).show()
+        return true
     }
 
     ////////////////////////////////////////////

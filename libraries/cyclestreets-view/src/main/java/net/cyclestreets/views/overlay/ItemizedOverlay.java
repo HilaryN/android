@@ -84,7 +84,7 @@ public class ItemizedOverlay<Item extends OverlayItem> extends Overlay implement
     marker.setBounds(rect_.left + x, rect_.top + y, rect_.right + x, rect_.bottom + y);
     marker.draw(canvas);
     // todo temp:
-    //canvas.drawRect(marker.getBounds(), Brush.BlackOutline);
+    canvas.drawRect(marker.getBounds(), Brush.BlackOutline);
     marker.setBounds(rect_);
 
     canvas.restore();
