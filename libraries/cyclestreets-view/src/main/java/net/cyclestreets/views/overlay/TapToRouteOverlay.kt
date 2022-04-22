@@ -362,6 +362,14 @@ class TapToRouteOverlay(private val mapView: CycleMapView, private val fragment:
 
     override fun onNewJourney(journey: Journey, waypoints: Waypoints) {
         setRoute(journey.isEmpty(), waypoints.count())
+        // Check for hints pref.
+        // todo add action to turn off hints
+        // https://developer.android.com/training/snackbar/action
+//        Snackbar.make(
+//            routeView,
+//            R.string.route_hint1,
+//            Snackbar.LENGTH_LONG
+//        ).show()
     }
 
     override fun onResetJourney() {
