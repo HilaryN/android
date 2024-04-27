@@ -1,6 +1,7 @@
 package net.cyclestreets.api.client;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -189,6 +190,8 @@ public class RetrofitApiClient {
                            final double latN) throws IOException {
     String bbox = toBboxString(lonW, latS, lonE, latN);
     Response<FeatureCollection> response = v2Api.getPOIs(type, bbox).execute();
+    Log.d("Response POI", response.body().toString());
+    Log.d("Response POI POIFactory", PoiFactory.toPoiList(response.body()).toString());
     return PoiFactory.toPoiList(response.body());
   }
 
@@ -197,6 +200,8 @@ public class RetrofitApiClient {
                            final double lat,
                            final int radius) throws IOException {
     Response<FeatureCollection> response = v2Api.getPOIs(type, lon, lat, radius).execute();
+    Log.d("Response POI2", response.body().toString());
+    Log.d("Response POI POIFactory", PoiFactory.toPoiList(response.body()).toString());
     return PoiFactory.toPoiList(response.body());
   }
 

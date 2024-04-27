@@ -1,6 +1,7 @@
 package net.cyclestreets.api
 
 import android.graphics.drawable.Drawable
+import android.util.Log
 import net.cyclestreets.api.ApiClient.getPOIs
 import org.osmdroid.api.IGeoPoint
 
@@ -25,6 +26,7 @@ class POICategory(val key: String,
     }
 
     override fun hashCode(): Int {
+        Log.d("POICategory hashCode", name.hashCode().toString())
         return name.hashCode()
     }
 
